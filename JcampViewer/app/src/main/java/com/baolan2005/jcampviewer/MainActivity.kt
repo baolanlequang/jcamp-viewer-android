@@ -41,9 +41,6 @@ class MainActivity : AppCompatActivity() {
         })
         chart = findViewById(R.id.chart) as LineChart
 
-//        val input = assets.open("testdata/test_file_5.dx")
-
-
     }
 
     private fun startScan() {
@@ -70,14 +67,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readJcamp(jcampurl: String) {
-//        val input = URL("https://raw.githubusercontent.com/baolanlequang/jcamp-converter-ios/master/JcampConverter/TestJcamp/testdata/test_file_5.dx").openStream()
         try {
             val input = URL(jcampurl).openStream()
 
             val reader = JcampReader(input)
             val jcamp = reader.jcamp
             if (jcamp != null) {
-                if (jcamp.spectra.size > 0) {
+                val children = jcamp.children
+                if (children != null) {
+                    val firstChild = children[0]
+                    if (firstChild.spectra.size > 0) {
+                        val spectra = firstChild.spectra[0]
+                        var entries: ArrayList<Entry> = arrayListOf()
+                        val xValues = spectra.xValues
+                        val yValues = spectra.yValues
+                        xValues.forEachIndexed {index, xval ->
+                            val yval = yValues[index]
+                            val entry = Entry(xval.toFloat(), yval.toFloat())
+                            entries.add(entry)
+                        }
+
+                        val dataSet = LineDataSet(entries, "test file")
+                        dataSet.setDrawCircles(false)
+                        val lineData = LineData(dataSet)
+                        chart.data = lineData
+                        chart.invalidate()
+                    }
+                }
+                else if (jcamp.spectra.size > 0) {
                     val spectra = jcamp.spectra[0]
                     var entries: ArrayList<Entry> = arrayListOf()
                     val xValues = spectra.xValues
